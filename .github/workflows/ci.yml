@@ -3,26 +3,27 @@ name: CI - Build & Run
 on:
   push:
     branches: [ main ]
-  pull_requests:
+  pull_request:
     branches: [ main ]
 
 jobs:
   build-and-run:
     runs-on: ubuntu-latest
     steps:
-      - name: Check repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Create .env from GitHub Secrets
         run: |
           echo "APP_MESSAGE=${{ secrets.APP_MESSAGE }}" > .env
-          echo "APP_HEALTH=$ {{ secrets.APP_HEALTH}}" >> .env
-      - name: Debug - show .env creation
+          echo "APP_HEALTH=${{ secrets.APP_HEALTH }}" >> .env
+
+      - name: Debug — show .env creation (masked secrets will not be printed)
         run: |
-          echo "---- .env contents ----"
+          echo "---- .env contents (for debug) ----"
           cat .env || true
           echo "---- end .env ----"
-      
+
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -32,7 +33,7 @@ jobs:
           DOCKER_BUILDKIT: 1
         run: |
           docker compose up --build -d
-      
+
       - name: Wait for service to be healthy
         run: |
           for i in {1..15}; do
@@ -40,19 +41,19 @@ jobs:
               echo "Service responding"
               break
             fi
-            echo "Waiting for service"
+            echo "Waiting for service..."
             sleep 2
           done
-        
+
       - name: Hit endpoints and show responses
         run: |
           echo "CURL /"
-          curl -sS http//:localhost:5000/ || true
+          curl -sS http://localhost:5000/ || true
           echo ""
           echo "CURL /health"
           curl -sS http://localhost:5000/health || true
           echo ""
-      
+
       - name: Tear down
         if: always()
         run: |
