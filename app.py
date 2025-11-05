@@ -15,4 +15,7 @@ def health():
     return Response(APP_HEALTH, mimetype="text/plain")
 
 if __name__ == "__main__":
+
     app.run(host="0.0.0.0", port=5000)
+
+#Updated to run workflow
